@@ -81,21 +81,21 @@ const commands = {
 			dispatcher = msg.guild.voiceConnection.playStream(yt(song.url, { audioonly: true }), { passes : MUSIC_PASSES });
 			let collector = msg.channel.createCollector(m => m);
 			collector.on('message', m => {
-				if (m.content.toLowerCase.startsWith('.pause')) {
+				if (m.content.toLowerCase().startsWith('.pause')) {
 					msg.channel.sendMessage('paused').then(() => {dispatcher.pause();});
-				} else if (m.content.toLowerCase.startsWith('.resume')){
+				} else if (m.content.toLowerCase().startsWith('.resume')){
 					msg.channel.sendMessage('resumed').then(() => {dispatcher.resume();});
-				} else if (m.content.toLowerCase.startsWith('.skip')){
+				} else if (m.content.toLowerCase().startsWith('.skip')){
 					msg.channel.sendMessage('skipped').then(() => {dispatcher.end();});
-				} else if (m.content.toLowerCase.startsWith('.volume+')){
+				} else if (m.content.toLowerCase().startsWith('.volume+')){
 					if (Math.round(dispatcher.volume*50) >= 100) return msg.channel.sendMessage(`Volume: ${Math.round(dispatcher.volume*50)}%`);
 					dispatcher.setVolume(Math.min((dispatcher.volume*50 + (2*(m.content.split('+').length-1)))/50,2));
 					msg.channel.sendMessage(`Volume: ${Math.round(dispatcher.volume*50)}%`);
-				} else if (m.content.toLowerCase.startsWith('.volume-')){
+				} else if (m.content.toLowerCase().startsWith('.volume-')){
 					if (Math.round(dispatcher.volume*50) <= 0) return msg.channel.sendMessage(`Volume: ${Math.round(dispatcher.volume*50)}%`);
 					dispatcher.setVolume(Math.max((dispatcher.volume*50 - (2*(m.content.split('-').length-1)))/50,0));
 					msg.channel.sendMessage(`Volume: ${Math.round(dispatcher.volume*50)}%`);
-				} else if (m.content.toLowerCase.startsWith('.time')){
+				} else if (m.content.toLowerCase().startsWith('.time')){
 					msg.channel.sendMessage(`time: ${Math.floor(dispatcher.time / 60000)}:${Math.floor((dispatcher.time % 60000)/1000) <10 ? '0'+Math.floor((dispatcher.time % 60000)/1000) : Math.floor((dispatcher.time % 60000)/1000)}`);
 				}
 			});
