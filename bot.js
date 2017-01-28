@@ -30,12 +30,13 @@ const commands = {
   'iam': (msg) => {
     var authorRoles = msg.guild.member(msg.author).roles;
     var roleName = msg.content.match(/^.iam (.*)/)[1];
+    var paramRole = msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()});
     if (!msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()})) {
       var sentMsgPromise = msg.channel.sendMessage('Could not find role ' + roleName + ', ' + msg.author.username + '!');
       sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
-    } else if (msg.guild.member(bot.user).roles.has(roleId)) {
-      var roleId = msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()}).id;
-      roleName = msg.guild.roles.get(roleId).name;  
+    } else if (msg.guild.member(bot.user).roles.has(paramRole)) {
+      var roleId = paramRole.id;
+      roleName = paramRole.name;  
       var intersectingRoles = authorRoles.keyArray().filter(n => {return msg.guild.member(bot.user).roles.keyArray().indexOf(n) != -1});
       if (intersectingRoles.length > 1) {
         var setRolePromise = msg.guild.member(msg.author).setRoles(authorRoles.filter(n => {return (intersectingRoles.indexOf(n.id) == -1 || !n.color)}).concat(msg.guild.roles.filter(n => {return n.id == roleId})));
