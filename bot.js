@@ -1,34 +1,8 @@
 const Discord = require('discord.js');
-//var request = require('request');
+var http = require('http');
 
 const bot = new Discord.Client();
 const token = 'Mjc0NzEzMjQ5NDk5NDQ3Mjk4.C22GLQ.toD09kvCfRefjAQADTXsEMsp5WE';
-
-/*
-request({
-  url: 'https://discordapp.com/api/oauth2/token',
-  method: 'POST',
-  auth: {
-    user: '274713249499447298',
-    pass: '95Wga4537Y8NEY83azjJwXxvzLidnyzH'
-  },
-  form: {
-    'grant_type': 'client_credentials'
-  }
-}, function(err, res) {
-  var json = JSON.parse(res.body);
-  console.log("Access Token:", json.access_token);
-   
-  request({
-    url: 'https://discordapp.com/api/oauth2/authorize?client-id=274713249499447298',
-    auth: {
-      'bearer': json.access_token
-    }
-  }, function(err, res) {
-    console.log(res.body);
-  });
-});
-*/
 
 bot.on('ready', () => {
   bot.user.setGame('Living to serve');
@@ -89,3 +63,36 @@ bot.on('message', message => {
 });
 
 bot.login(token);
+
+ http.createServer(function (request, response) {
+   response.writeHead(200, {'Content-Type': 'text/plain'});
+   response.end('Hello World\n');
+}).listen(process.env.PORT || 5000);
+
+
+//var request = require('request');
+/*
+request({
+  url: 'https://discordapp.com/api/oauth2/token',
+  method: 'POST',
+  auth: {
+    user: '274713249499447298',
+    pass: '95Wga4537Y8NEY83azjJwXxvzLidnyzH'
+  },
+  form: {
+    'grant_type': 'client_credentials'
+  }
+}, function(err, res) {
+  var json = JSON.parse(res.body);
+  console.log("Access Token:", json.access_token);
+   
+  request({
+    url: 'https://discordapp.com/api/oauth2/authorize?client-id=274713249499447298',
+    auth: {
+      'bearer': json.access_token
+    }
+  }, function(err, res) {
+    console.log(res.body);
+  });
+});
+*/
