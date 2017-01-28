@@ -38,7 +38,7 @@ const commands = {
       var roleId = paramRole.id;
       roleName = paramRole.name;  
       var intersectingColorRoles = authorRoles.keyArray().filter(n => {return (msg.guild.member(bot.user).roles.keyArray().indexOf(n) != -1) && (msg.guild.roles.get(n).color)});
-      if (intersectingColorRoles.length > 1 && paramRole.color) {
+      if (intersectingColorRoles.length > 0 && paramRole.color) {
         var setRolePromise = msg.guild.member(msg.author).setRoles(authorRoles.filter(n => {return intersectingColorRoles.indexOf(n.id) == -1}).concat(msg.guild.roles.filter(n => {return n.id == roleId})));
         setRolePromise.then(() => {
           var sentMsgPromise = msg.channel.sendMessage('Replaced your color role(s) with ' + roleName + ', ' + msg.author.username + '!');
@@ -74,7 +74,7 @@ const commands = {
 		console.log(queue);
 		(function play(song) {
 			console.log(song);
-			if (song === undefined) return msg.channel.sendMessage('Queue is empty - add more with ```.add <url>```!').then(() => {
+			if (song === undefined) return msg.channel.sendMessage('Queue is empty - add more with `.add <url>`!').then(() => {
 				queue[msg.guild.id].playing = false;
 				//msg.member.voiceChannel.leave();
 			});
@@ -91,11 +91,11 @@ const commands = {
 				} else if (m.content.toLowerCase().startsWith('.volume+')){
 					if (Math.round(dispatcher.volume*50) >= 100) return msg.channel.sendMessage(`Volume: ${Math.round(dispatcher.volume*50)}%`);
 					dispatcher.setVolume(Math.min((dispatcher.volume*50 + (2*(m.content.split('+').length-1)))/50,2));
-					msg.channel.sendMessage(`Volume changed to ${Math.round(dispatcher.volume*50)}%`);
+					msg.channel.sendMessage(`Volume changed to ${Math.round(dispatcher.volume*50)}%!`);
 				} else if (m.content.toLowerCase().startsWith('.volume-')){
 					if (Math.round(dispatcher.volume*50) <= 0) return msg.channel.sendMessage(`Volume: ${Math.round(dispatcher.volume*50)}%`);
 					dispatcher.setVolume(Math.max((dispatcher.volume*50 - (2*(m.content.split('-').length-1)))/50,0));
-					msg.channel.sendMessage(`Volume changed to ${Math.round(dispatcher.volume*50)}%`);
+					msg.channel.sendMessage(`Volume changed to ${Math.round(dispatcher.volume*50)}%!`);
 				} else if (m.content.toLowerCase().startsWith('.time')){
 					msg.channel.sendMessage(`Time in track: ${Math.floor(dispatcher.time / 60000)}:${Math.floor((dispatcher.time % 60000)/1000) <10 ? '0'+Math.floor((dispatcher.time % 60000)/1000) : Math.floor((dispatcher.time % 60000)/1000)}`);
 				}
@@ -128,14 +128,14 @@ const commands = {
 			if(err) return msg.channel.sendMessage('Invalid YouTube Link: ' + err);
 			if (!queue.hasOwnProperty(msg.guild.id)) queue[msg.guild.id] = {}, queue[msg.guild.id].playing = false, queue[msg.guild.id].songs = [];
 			queue[msg.guild.id].songs.push({url: url, title: info.title, requester: msg.author.username});
-			msg.channel.sendMessage(`added **${info.title}** to the queue`).then(() => {msg.delete();});
+			msg.channel.sendMessage(`Successfully added **${info.title}** to the queue!`).then(() => {msg.delete();});
 		});
 	},
 	'queue': (msg) => {
 		if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add`);
 		let tosend = [];
 		queue[msg.guild.id].songs.forEach((song, i) => { tosend.push(`${i+1}. ${song.title} - Requested by: ${song.requester}`);});
-		msg.channel.sendMessage(`__**${msg.guild.name}'s Music Queue:**__ Currently **${tosend.length}** songs queued ${(tosend.length > 15 ? '*[Only next 15 shown]*' : '')}\n\`\`\`${tosend.slice(0,15).join('\n')}\`\`\``).then(() => {msg.delete();});
+		msg.channel.sendMessage(`__**${msg.guild.name}'s Music Queue:**__ Currently **${tosend.length}** songs queued ${(tosend.length > 15 ? '*[Only next 15 shown]*' : '')}\n${tosend.length==0?'':'\`\`\`'}${tosend.slice(0,15).join('\n')}${tosend.length==0?'':'\`\`\`'}`).then(() => {msg.delete();});
 	},
 	'help': (msg) => {
 		let tosend = ['```xl', '.iam : "Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you."', '.clear: "Clears all the roles the bot can take off you."', '.join : "Join Voice channel of msg sender"',	'.add : "Add a valid youtube link to the queue"', '.queue : "Shows the current queue, up to 15 songs shown."', '.play : "Play the music queue if already joined to a voice channel"', '', 'the following commands only function while the play command is running:'.toUpperCase(), '.pause : "pauses the music"',	'.resume : "resumes the music"', '.skip : "skips the playing song"', '.time : "Shows the playtime of the song."',	'.volume+(+++) : "increases volume by 2%/+"',	'.volume-(---) : "decreases volume by 2%/-"',	'```'];
