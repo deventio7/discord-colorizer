@@ -8,7 +8,9 @@
   "dependencies": {
     "discord.js": "^11.0.0",
     "lodash": "^4.17.4",
-    "request": "^2.79.0"
+    "node-opus": "^0.2.4",
+    "request": "^2.79.0",
+    "ytdl-core": "^0.7.23"
   },
   "scripts": {
     "start": "node bot.js"
