@@ -34,12 +34,12 @@ const commands = {
     if (!msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()})) {
       var sentMsgPromise = msg.channel.sendMessage('Could not find role ' + roleName + ', ' + msg.author.username + '!');
       sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
-    } else if (msg.guild.member(bot.user).roles.has(paramRole)) {
+    } else if (msg.guild.member(bot.user).roles.has(paramRole.id)) {
       var roleId = paramRole.id;
       roleName = paramRole.name;  
-      var intersectingRoles = authorRoles.keyArray().filter(n => {return msg.guild.member(bot.user).roles.keyArray().indexOf(n) != -1});
-      if (intersectingRoles.length > 1) {
-        var setRolePromise = msg.guild.member(msg.author).setRoles(authorRoles.filter(n => {return (intersectingRoles.indexOf(n.id) == -1 || !n.color)}).concat(msg.guild.roles.filter(n => {return n.id == roleId})));
+      var intersectingColorRoles = authorRoles.keyArray().filter(n => {return (msg.guild.member(bot.user).roles.keyArray().indexOf(n) != -1) && (msg.guild.roles.get(n).color)});
+      if (intersectingColorRoles.length > 1 && paramRole.color) {
+        var setRolePromise = msg.guild.member(msg.author).setRoles(authorRoles.filter(n => {return intersectingColorRoles.indexOf(n.id) == -1}).concat(msg.guild.roles.filter(n => {return n.id == roleId})));
         setRolePromise.then(() => {
           var sentMsgPromise = msg.channel.sendMessage('Replaced your color role(s) with ' + roleName + ', ' + msg.author.username + '!');
           sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
