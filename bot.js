@@ -70,10 +70,7 @@ const commands = {
 		if (queue[msg.guild.id].playing) return msg.channel.sendMessage('Already Playing!');
 		let dispatcher;
 		queue[msg.guild.id].playing = true;
-
-		console.log(queue);
 		(function play(song) {
-			console.log(song);
 			if (song === undefined) return msg.channel.sendMessage('Queue is empty - add more with `.add <url>`!').then(() => {
 				queue[msg.guild.id].playing = false;
 				//msg.member.voiceChannel.leave();
