@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 var http = require('http');
+const yt = require('ytdl-core');
 
 const bot = new Discord.Client();
 const MUSIC_PASSES = 2;
