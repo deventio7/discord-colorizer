@@ -3,7 +3,7 @@ var http = require('http');
 const yt = require('ytdl-core');
 
 const bot = new Discord.Client();
-const MUSIC_PASSES = 2;
+const MUSIC_PASSES = 3; //quality; 1 lowest, 5 highest
 const token = 'Mjc0NzEzMjQ5NDk5NDQ3Mjk4.C22GLQ.toD09kvCfRefjAQADTXsEMsp5WE';
 
 bot.on('ready', () => {
@@ -65,7 +65,7 @@ const commands = {
     }
   },
 	'play': (msg) => {
-		if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add`);
+		if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add!`);
 		if (!msg.guild.voiceConnection) return commands.join(msg).then(() => commands.play(msg));
 		if (queue[msg.guild.id].playing) return msg.channel.sendMessage('Already Playing!');
 		let dispatcher;
@@ -123,22 +123,22 @@ const commands = {
 	},
 	'add': (msg) => {
 		let url = msg.content.split(' ')[1];
-		if (url == '' || url === undefined) return msg.channel.sendMessage(`You must add a url, or youtube video id after .add`);
+		if (url == '' || url === undefined) return msg.channel.sendMessage(`You must add a url, or youtube video id after .add!`);
 		yt.getInfo(url, (err, info) => {
-			if(err) return msg.channel.sendMessage('Invalid YouTube Link: ' + err);
+			if(err) return msg.channel.sendMessage('Invalid YouTube Link: `' + err + '`');
 			if (!queue.hasOwnProperty(msg.guild.id)) queue[msg.guild.id] = {}, queue[msg.guild.id].playing = false, queue[msg.guild.id].songs = [];
 			queue[msg.guild.id].songs.push({url: url, title: info.title, requester: msg.author.username});
 			msg.channel.sendMessage(`Successfully added **${info.title}** to the queue!`).then(() => {msg.delete();});
 		});
 	},
 	'queue': (msg) => {
-		if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add`);
+		if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add!`);
 		let tosend = [];
 		queue[msg.guild.id].songs.forEach((song, i) => { tosend.push(`${i+1}. ${song.title} - Requested by: ${song.requester}`);});
 		msg.channel.sendMessage(`__**${msg.guild.name}'s Music Queue:**__ Currently **${tosend.length}** songs queued ${(tosend.length > 15 ? '*[Only next 15 shown]*' : '')}\n${tosend.length==0?'':'\`\`\`'}${tosend.slice(0,15).join('\n')}${tosend.length==0?'':'\`\`\`'}`).then(() => {msg.delete();});
 	},
 	'help': (msg) => {
-		let tosend = ['```xl', '.iam : "Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you."', '.clear: "Clears all the roles the bot can take off you."', '.join : "Join Voice channel of msg sender"',	'.add : "Add a valid youtube link to the queue"', '.queue : "Shows the current queue, up to 15 songs shown."', '.play : "Play the music queue if already joined to a voice channel"', '', 'the following commands only function while the play command is running:'.toUpperCase(), '.pause : "pauses the music"',	'.resume : "resumes the music"', '.skip : "skips the playing song"', '.time : "Shows the playtime of the song."',	'.volume+(+++) : "increases volume by 2%/+"',	'.volume-(---) : "decreases volume by 2%/-"',	'```'];
+		let tosend = ['```', '.iam : Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you.', '.clear: Clears all the roles the bot can take off you.', '.join : Join Voice channel of msg sender',	'.add : Add a valid youtube link to the queue', '.queue : Shows the current queue, up to 15 songs shown.', '.play : Play the music queue if already joined to a voice channel', '', 'the following commands only function while the play command is running:'.toUpperCase(), '.pause : Pauses the music.',	'.resume : Resumes the music.', '.skip : Skips the current track.', '.time : Shows the playtime of the song.',	'.volume+(+++) : Increases the volume by 2%/+.',	'.volume-(---) : Decreases the volume by 2%/-.',	'```'];
 		msg.channel.sendMessage(tosend.join('\n')).then(() => {msg.delete();});
 	},
 };
