@@ -9,7 +9,7 @@
     "discord.js": "^11.0.0",
     "lodash": "^4.17.4",
     "request": "^2.79.0"
-  }
+  },
   "scripts": {
     "start": "node bot.js"
   }
