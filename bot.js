@@ -6,6 +6,16 @@ const bot = new Discord.Client();
 var music_quality = 3; //quality; 1 lowest, 5 highest
 const token = 'Mjc0NzEzMjQ5NDk5NDQ3Mjk4.C22GLQ.toD09kvCfRefjAQADTXsEMsp5WE';
 
+/*TODO
+
+ - implement persistent storage
+ - implement admin-only discrimination
+ - implement playlist shuffle
+ - implement single/playlist loop
+ - implement welcome/farewell messages
+ 
+*/
+
 bot.on('ready', () => {
   bot.user.setGame('.help for, well, help!');
   console.log('Bot is ready!');
@@ -29,7 +39,7 @@ const commands = {
   },
   'iam': (msg) => {
     var authorRoles = msg.guild.member(msg.author).roles;
-    var roleName = msg.content.match(/^.iam (.*)/)[1];
+    var roleName = msg.content.match(/^.iam (.*)/i)[1];
     var paramRole = msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()});
     if (!msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()})) {
       var sentMsgPromise = msg.channel.sendMessage('Could not find role ' + roleName + ', ' + msg.author.username + '!');
