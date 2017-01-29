@@ -126,7 +126,7 @@ const commands = {
     var param = msg.content.split(' ')[1];
     if (param >= 1 && param <= 5 && (param%1)===0) {
       music_quality = param;
-      msg.channel.sendMessage(`Music quality set to **${3}**!`)
+      msg.channel.sendMessage(`Music quality set to **${music_quality}**!`)
     } else {
       msg.channel.sendMessage(`Music quality can only be set to a whole number between 1 and 5 inclusive.`)
     }
