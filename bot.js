@@ -93,6 +93,14 @@ const commands = {
 					if (Math.round(dispatcher.volume*50) <= 0) return msg.channel.sendMessage(`Volume: ${Math.round(dispatcher.volume*50)}%`);
 					dispatcher.setVolume(Math.max((dispatcher.volume*50 - (2*(m.content.split('-').length-1)))/50,0));
 					msg.channel.sendMessage(`Volume changed to ${Math.round(dispatcher.volume*50)}%!`);
+				} else if (m.content.toLowerCase().startsWith('.volume')){
+          var param = m.content.split(' ')[1];
+          if (param%1 === 0) {
+            dispatcher.setVolume(Math.max(Math.min(param,100),0)/50);
+            msg.channel.sendMessage(`Volume changed to ${Math.round(dispatcher.volume*50)}%!`);
+          } else {
+            msg.channel.sendMessage(`Please enter a whole number between 0 and 100 inclusive; Current volume is ${Math.round(dispatcher.volume*50)}%.`);
+          }
 				} else if (m.content.toLowerCase().startsWith('.time')){
 					msg.channel.sendMessage(`Time in track: ${Math.floor(dispatcher.time / 60000)}:${Math.floor((dispatcher.time % 60000)/1000) <10 ? '0'+Math.floor((dispatcher.time % 60000)/1000) : Math.floor((dispatcher.time % 60000)/1000)}`);
 				}
