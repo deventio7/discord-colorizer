@@ -193,7 +193,11 @@ const commands = {
 bot.on('message', msg => { //Make @ commands for join and leave
 	if (!msg.content.startsWith('.')) return;
   //if (!msg.content.startsWith('.') && !(msg.content.startsWith('@') && msg.member.permissions.hasPermission("ADMINISTRATOR"))) return;
-	if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
+  try {
+  	if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
+  } catch (e) {
+    console.err(e);
+  }
 });
 
 bot.login(token);
