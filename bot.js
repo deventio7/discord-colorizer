@@ -124,7 +124,7 @@ const commands = {
 	},
   'quality': (msg) => {
     var param = msg.content.split(' ')[1];
-    if (param >= 1 && param <= 5 && typeof param==='number' && (param%1)===0) {
+    if (param >= 1 && param <= 5 && (param%1)===0) {
       music_quality = param;
       msg.channel.sendMessage(`Music quality set to **${3}**!`)
     } else {
@@ -148,7 +148,23 @@ const commands = {
 		msg.channel.sendMessage(`__**${msg.guild.name}'s Music Queue:**__ Currently **${tosend.length}** songs queued ${(tosend.length > 15 ? '*[Only next 15 shown]*' : '')}\n${tosend.length==0?'':'\`\`\`'}${tosend.slice(0,15).join('\n')}${tosend.length==0?'':'\`\`\`'}`).then(() => {msg.delete();});
 	},
 	'help': (msg) => {
-		let tosend = ['```', '.iam <role>: Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you.', '.clear: Clears all the roles the bot can take off you.', '.join : The bot will join the voice channel of the message\'s sender.',	'.leave : The bot will leave all voice channels on the server.', '.quality <number>: Sets the music quality. Number must be between 1 and 5 inclusive. 5 is complete lossless.', '.add <url>: Adds a valid youtube link to the queue.', '.queue : Shows the current queue, up to 15 songs shown.', '.play : Play the music queue.', '.help : Displays this menu.', '', 'the following commands only function while the play command is running:'.toUpperCase(), '.pause : Pauses the music.',	'.resume : Resumes the music.', '.skip : Skips the current track.', '.time : Shows the playtime of the song.',	'.volume+(+++) : Increases the volume by 2%/+.',	'.volume-(---) : Decreases the volume by 2%/-.',	'```'];
+		let tosend = ['```',
+    '.iam <role>: Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you.',
+    '.clear: Clears all the roles the bot can take off you.', '.join : The bot will join the voice channel of the message\'s sender.',
+    '.leave : The bot will leave all voice channels on the server.',
+    '.quality <number>: Sets the music quality. Number must be between 1 and 5 inclusive. 5 is complete lossless.',
+    '.add <url>: Adds a valid youtube link to the queue.', '.queue : Shows the current queue, up to 15 songs shown.',
+    '.play : Play the music queue.',
+    '.help : Displays this menu.',
+    '',
+    'the following commands only function while the play command is running:'.toUpperCase(),
+    '.pause : Pauses the music.',
+    '.resume : Resumes the music.',
+    '.skip : Skips the current track.',
+    '.time : Shows the playtime of the song.',
+    '.volume+(+++) : Increases the volume by 2%/+.',
+    '.volume-(---) : Decreases the volume by 2%/-.',
+    '```'];
 		msg.channel.sendMessage(tosend.join('\n')).then(() => {msg.delete();});
 	},
 };
