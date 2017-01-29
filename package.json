@@ -13,6 +13,8 @@
     "ytdl-core": "^0.7.23"
   },
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "build-deploy": "git pull; npm install; node bot.js > bot.log 2> bot.err",
+    "deploy": "git pull; node bot.js > bot.log 2> bot.err"
   }
 }

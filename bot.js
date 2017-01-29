@@ -21,6 +21,7 @@ bot.on('ready', () => {
   console.log('Bot is ready!');
 });
 
+var errors = '';
 let queue = {};
 
 const commands = {
@@ -196,7 +197,8 @@ bot.on('message', msg => { //Make @ commands for join and leave
   try {
   	if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
   } catch (e) {
-    console.err(e);
+    console.err(e + '\n-------\n');
+    errors = errors + e + '\n-------\n';
   }
 });
 
@@ -204,7 +206,7 @@ bot.login(token);
 
  http.createServer(function (request, response) {
    response.writeHead(200, {'Content-Type': 'text/plain'});
-   response.end('Hello World\n');
+   response.end(errors + '\n');
 }).listen(process.env.PORT || 5000);
 
 
