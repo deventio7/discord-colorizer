@@ -3,7 +3,7 @@ var http = require('http');
 const yt = require('ytdl-core');
 
 const bot = new Discord.Client();
-const MUSIC_PASSES = 3; //quality; 1 lowest, 5 highest
+var music_quality = 3; //quality; 1 lowest, 5 highest
 const token = 'Mjc0NzEzMjQ5NDk5NDQ3Mjk4.C22GLQ.toD09kvCfRefjAQADTXsEMsp5WE';
 
 bot.on('ready', () => {
@@ -76,7 +76,7 @@ const commands = {
 				//msg.member.voiceChannel.leave();
 			});
 			msg.channel.sendMessage(`Playing: **${song.title}** as requested by: **${song.requester}**`);
-			dispatcher = msg.guild.voiceConnection.playStream(yt(song.url, { audioonly: true }), { passes : MUSIC_PASSES });
+			dispatcher = msg.guild.voiceConnection.playStream(yt(song.url, { audioonly: true }), { passes : music_quality });
 			let collector = msg.channel.createCollector(m => m);
 			collector.on('message', m => {
 				if (m.content.toLowerCase().startsWith('.pause')) {
@@ -122,6 +122,15 @@ const commands = {
 			voiceChannel.join().then(connection => resolve(connection)).catch(err => reject(err));
 		});
 	},
+  'quality': (msg) => {
+    var param = msg.content.split(' ')[1];
+    if (param >= 1 && param <= 5 && typeof param==='number' && (param%1)===0) {
+      music_quality = param;
+      msg.channel.sendMessage(`Music quality set to **${3}**!`)
+    } else {
+      msg.channel.sendMessage(`Music quality can only be set to a whole number between 1 and 5 inclusive.`)
+    }
+  },
 	'add': (msg) => {
 		let url = msg.content.split(' ')[1];
 		if (url == '' || url === undefined) return msg.channel.sendMessage(`You must add a url, or youtube video id after .add!`);
@@ -139,7 +148,7 @@ const commands = {
 		msg.channel.sendMessage(`__**${msg.guild.name}'s Music Queue:**__ Currently **${tosend.length}** songs queued ${(tosend.length > 15 ? '*[Only next 15 shown]*' : '')}\n${tosend.length==0?'':'\`\`\`'}${tosend.slice(0,15).join('\n')}${tosend.length==0?'':'\`\`\`'}`).then(() => {msg.delete();});
 	},
 	'help': (msg) => {
-		let tosend = ['```', '.iam <role>: Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you.', '.clear: Clears all the roles the bot can take off you.', '.join : The bot will join the voice channel of the message\'s sender.',	'.leave : The bot will leave all voice channels on the server.', '.add <url>: Adds a valid youtube link to the queue.', '.queue : Shows the current queue, up to 15 songs shown.', '.play : Play the music queue.', '.help : Displays this menu.', '', 'the following commands only function while the play command is running:'.toUpperCase(), '.pause : Pauses the music.',	'.resume : Resumes the music.', '.skip : Skips the current track.', '.time : Shows the playtime of the song.',	'.volume+(+++) : Increases the volume by 2%/+.',	'.volume-(---) : Decreases the volume by 2%/-.',	'```'];
+		let tosend = ['```', '.iam <role>: Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you.', '.clear: Clears all the roles the bot can take off you.', '.join : The bot will join the voice channel of the message\'s sender.',	'.leave : The bot will leave all voice channels on the server.', '.quality <number>: Sets the music quality. Number must be between 1 and 5 inclusive. 5 is complete lossless.', '.add <url>: Adds a valid youtube link to the queue.', '.queue : Shows the current queue, up to 15 songs shown.', '.play : Play the music queue.', '.help : Displays this menu.', '', 'the following commands only function while the play command is running:'.toUpperCase(), '.pause : Pauses the music.',	'.resume : Resumes the music.', '.skip : Skips the current track.', '.time : Shows the playtime of the song.',	'.volume+(+++) : Increases the volume by 2%/+.',	'.volume-(---) : Decreases the volume by 2%/-.',	'```'];
 		msg.channel.sendMessage(tosend.join('\n')).then(() => {msg.delete();});
 	},
 };
