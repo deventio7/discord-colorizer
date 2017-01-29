@@ -7,8 +7,8 @@ const MUSIC_PASSES = 3; //quality; 1 lowest, 5 highest
 const token = 'Mjc0NzEzMjQ5NDk5NDQ3Mjk4.C22GLQ.toD09kvCfRefjAQADTXsEMsp5WE';
 
 bot.on('ready', () => {
-  bot.user.setGame('Living to serve');
-  console.log('.help for, well, help!');
+  bot.user.setGame('.help for, well, help!');
+  console.log('Bot is ready!');
 });
 
 let queue = {};
