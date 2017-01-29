@@ -8,7 +8,7 @@ const token = 'Mjc0NzEzMjQ5NDk5NDQ3Mjk4.C22GLQ.toD09kvCfRefjAQADTXsEMsp5WE';
 
 bot.on('ready', () => {
   bot.user.setGame('Living to serve');
-  console.log('I am ready!');
+  console.log('.help for, well, help!');
 });
 
 let queue = {};
@@ -111,6 +111,10 @@ const commands = {
 			});
 		})(queue[msg.guild.id].songs[0]);
 	},
+  'leave': (msg) => {
+    msg.guild.channels.filter(n => {return n.type === 'voice'}).array().forEach(n => {n.leave()});
+    msg.channel.sendMessage(`Leaving all voice channels on the server!`);
+  },
 	'join': (msg) => {
 		return new Promise((resolve, reject) => {
 			const voiceChannel = msg.member.voiceChannel;
@@ -135,13 +139,14 @@ const commands = {
 		msg.channel.sendMessage(`__**${msg.guild.name}'s Music Queue:**__ Currently **${tosend.length}** songs queued ${(tosend.length > 15 ? '*[Only next 15 shown]*' : '')}\n${tosend.length==0?'':'\`\`\`'}${tosend.slice(0,15).join('\n')}${tosend.length==0?'':'\`\`\`'}`).then(() => {msg.delete();});
 	},
 	'help': (msg) => {
-		let tosend = ['```', '.iam : Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you.', '.clear: Clears all the roles the bot can take off you.', '.join : Join Voice channel of msg sender',	'.add : Add a valid youtube link to the queue', '.queue : Shows the current queue, up to 15 songs shown.', '.play : Play the music queue if already joined to a voice channel', '', 'the following commands only function while the play command is running:'.toUpperCase(), '.pause : Pauses the music.',	'.resume : Resumes the music.', '.skip : Skips the current track.', '.time : Shows the playtime of the song.',	'.volume+(+++) : Increases the volume by 2%/+.',	'.volume-(---) : Decreases the volume by 2%/-.',	'```'];
+		let tosend = ['```', '.iam <role>: Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you.', '.clear: Clears all the roles the bot can take off you.', '.join : The bot will join the voice channel of the message\'s sender.',	'.leave : The bot will leave all voice channels on the server.', '.add <url>: Adds a valid youtube link to the queue.', '.queue : Shows the current queue, up to 15 songs shown.', '.play : Play the music queue.', '.help : Displays this menu.', '', 'the following commands only function while the play command is running:'.toUpperCase(), '.pause : Pauses the music.',	'.resume : Resumes the music.', '.skip : Skips the current track.', '.time : Shows the playtime of the song.',	'.volume+(+++) : Increases the volume by 2%/+.',	'.volume-(---) : Decreases the volume by 2%/-.',	'```'];
 		msg.channel.sendMessage(tosend.join('\n')).then(() => {msg.delete();});
 	},
 };
 
 bot.on('message', msg => {
 	if (!msg.content.startsWith('.')) return;
+  //if (!msg.content.startsWith('.') && !(msg.content.startsWith('@') && msg.member.permissions.hasPermission("ADMINISTRATOR"))) return;
 	if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
 });
 
