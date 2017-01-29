@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "node bot.js",
-    "build-deploy": "git pull; npm install; node bot.js > bot.log 2> bot.err",
-    "deploy": "git pull; node bot.js > bot.log 2> bot.err"
+    "build-deploy": "git pull; npm install; node bot.js > bot.log 2> bot.err &",
+    "deploy": "git pull; node bot.js > bot.log 2> bot.err &"
   }
 }
