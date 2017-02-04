@@ -200,7 +200,7 @@ bot.on('message', msg => {
   if (!msg.content.startsWith('.')) return;
   if (msg.content.startsWith('.!') && msg.member.permissions.hasPermission("ADMINISTRATOR")) {
     try {
-      if (admCommands.hasOwnProperty(msg.content.toLowerCase().slice(2).split(' ')[0])) admCommands[msg.content.toLowerCase().slice(2%).split(' ')[0]](msg);
+      if (admCommands.hasOwnProperty(msg.content.toLowerCase().slice(2).split(' ')[0])) admCommands[msg.content.toLowerCase().slice(2).split(' ')[0]](msg);
     } catch (e) {
       console.err(`\n-------\n${e}\n-------\n`);
       errors = errors + e + '\n-------\n';
