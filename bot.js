@@ -5,12 +5,11 @@ const options = require('./options.json');
 
 const bot = new Discord.Client();
 var music_quality = 3; //quality; 1 lowest, 5 highest
-const token = options.token; //'Mjc0NzEzMjQ5NDk5NDQ3Mjk4.C22GLQ.toD09kvCfRefjAQADTXsEMsp5WE';
+const token = options.token;
 
 /*TODO
 
  - implement persistent storage
- - implement admin-only discrimination
  - implement playlist shuffle
  - implement single/playlist loop
  - implement welcome/farewell messages
@@ -92,7 +91,10 @@ const commands = {
   },
   'play': (msg) => {
     if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add!`);
-    if (!msg.guild.voiceConnection) {msg.channel.sendMessage('I am not in any voice channels! Please have an adminsistrator add me to one with `.!join`.').then(sent => {sent.delete(3000); msg.delete(3000);});};
+    if (!msg.guild.voiceConnection) {
+      msg.channel.sendMessage('I am not in any voice channels! Please have an administrator add me to one with `.!join`.').then(sent => {sent.delete(3000); msg.delete(3000);});
+      return;
+    };
     if (queue[msg.guild.id].playing) return msg.channel.sendMessage('Already Playing!');
     let dispatcher;
     queue[msg.guild.id].playing = true;
