@@ -92,7 +92,7 @@ const commands = {
   },
   'play': (msg) => {
     if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add!`);
-    if (!msg.guild.voiceConnection) return commands.join(msg).then(() => commands.play(msg));
+    if (!msg.guild.voiceConnection) {msg.channel.sendMessage('I am not in any voice channels! Please have an adminsistrator add me to one with `.!join`.').then(sent => {sent.delete(3000); msg.delete(3000);});};
     if (queue[msg.guild.id].playing) return msg.channel.sendMessage('Already Playing!');
     let dispatcher;
     queue[msg.guild.id].playing = true;
