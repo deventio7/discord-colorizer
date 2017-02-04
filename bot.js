@@ -209,7 +209,7 @@ bot.on('message', msg => {
   try {
     if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
   } catch (e) {
-    console.err(`\n-------\n${e}\n-------\n`);
+    console.error(`\n-------\n${e}\n-------\n`);
     errors = errors + e + '\n-------\n';
   }
 });
