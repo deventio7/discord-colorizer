@@ -1,10 +1,11 @@
 const Discord = require('discord.js');
 var http = require('http');
 const yt = require('ytdl-core');
+const options = require('./options.json');
 
 const bot = new Discord.Client();
 var music_quality = 3; //quality; 1 lowest, 5 highest
-const token = 'Mjc0NzEzMjQ5NDk5NDQ3Mjk4.C22GLQ.toD09kvCfRefjAQADTXsEMsp5WE';
+const token = options.token; //'Mjc0NzEzMjQ5NDk5NDQ3Mjk4.C22GLQ.toD09kvCfRefjAQADTXsEMsp5WE';
 
 /*TODO
 
@@ -153,12 +154,16 @@ const commands = {
 	'add': (msg) => {
 		let url = msg.content.split(' ')[1];
 		if (url == '' || url === undefined) return msg.channel.sendMessage(`You must add a url, or youtube video id after .add!`);
-    yt.getInfo(url, (err, info) => {
-      if (err) {msg.channel.sendMessage('Invalid YouTube Link: `' + url + '`').then(sent => {sent.delete(3000); msg.delete(3000);}); return;}
-      if (!queue.hasOwnProperty(msg.guild.id)) queue[msg.guild.id] = {}, queue[msg.guild.id].playing = false, queue[msg.guild.id].songs = [];
-      queue[msg.guild.id].songs.push({url: url, title: info.title, requester: msg.author.username});
-      msg.channel.sendMessage(`Successfully added **${info.title}** to the queue!`).then(() => {msg.delete();});
-    });
+    try {
+      yt.getInfo(url, (err, info) => {
+        if (err) {return;}
+        if (!queue.hasOwnProperty(msg.guild.id)) queue[msg.guild.id] = {}, queue[msg.guild.id].playing = false, queue[msg.guild.id].songs = [];
+        queue[msg.guild.id].songs.push({url: url, title: info.title, requester: msg.author.username});
+        msg.channel.sendMessage(`Successfully added **${info.title}** to the queue!`).then(() => {msg.delete();});
+      });
+    } catch (e) {
+      msg.channel.sendMessage('Invalid YouTube Link: `' + url + '`').then(sent => {sent.delete(3000); msg.delete(3000);});
+    }
 	},
 	'queue': (msg) => {
 		if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add!`);
@@ -194,7 +199,7 @@ bot.on('message', msg => { //Make @ commands for join and leave
   try {
   	if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
   } catch (e) {
-    console.log(e + '\n-------\n');
+    console.err(`\n-------\n${e}\n-------\n`);
     errors = errors + e + '\n-------\n';
   }
 });
