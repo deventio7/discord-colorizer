@@ -153,15 +153,12 @@ const commands = {
 	'add': (msg) => {
 		let url = msg.content.split(' ')[1];
 		if (url == '' || url === undefined) return msg.channel.sendMessage(`You must add a url, or youtube video id after .add!`);
-    try {
-      yt.getInfo(url, (err, info) => {
-        if (!queue.hasOwnProperty(msg.guild.id)) queue[msg.guild.id] = {}, queue[msg.guild.id].playing = false, queue[msg.guild.id].songs = [];
-        queue[msg.guild.id].songs.push({url: url, title: info.title, requester: msg.author.username});
-        msg.channel.sendMessage(`Successfully added **${info.title}** to the queue!`).then(() => {msg.delete();});
-      });
-    } catch (e) {
-      msg.channel.sendMessage('Invalid YouTube Link: `' + url + '`').then(sent => {sent.delete(3000); msg.delete(3000);});
-    }
+    yt.getInfo(url, (err, info) => {
+      if (err) {msg.channel.sendMessage('Invalid YouTube Link: `' + url + '`').then(sent => {sent.delete(3000); msg.delete(3000);});}
+      if (!queue.hasOwnProperty(msg.guild.id)) queue[msg.guild.id] = {}, queue[msg.guild.id].playing = false, queue[msg.guild.id].songs = [];
+      queue[msg.guild.id].songs.push({url: url, title: info.title, requester: msg.author.username});
+      msg.channel.sendMessage(`Successfully added **${info.title}** to the queue!`).then(() => {msg.delete();});
+    });
 	},
 	'queue': (msg) => {
 		if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add!`);
@@ -197,7 +194,7 @@ bot.on('message', msg => { //Make @ commands for join and leave
   try {
   	if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
   } catch (e) {
-    console.err(e + '\n-------\n');
+    console.log(e + '\n-------\n');
     errors = errors + e + '\n-------\n';
   }
 });
