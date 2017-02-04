@@ -154,7 +154,7 @@ const commands = {
 		let url = msg.content.split(' ')[1];
 		if (url == '' || url === undefined) return msg.channel.sendMessage(`You must add a url, or youtube video id after .add!`);
     yt.getInfo(url, (err, info) => {
-      if (err) {msg.channel.sendMessage('Invalid YouTube Link: `' + url + '`').then(sent => {sent.delete(3000); msg.delete(3000);});}
+      if (err) {msg.channel.sendMessage('Invalid YouTube Link: `' + url + '`').then(sent => {sent.delete(3000); msg.delete(3000);}); return;}
       if (!queue.hasOwnProperty(msg.guild.id)) queue[msg.guild.id] = {}, queue[msg.guild.id].playing = false, queue[msg.guild.id].songs = [];
       queue[msg.guild.id].songs.push({url: url, title: info.title, requester: msg.author.username});
       msg.channel.sendMessage(`Successfully added **${info.title}** to the queue!`).then(() => {msg.delete();});
