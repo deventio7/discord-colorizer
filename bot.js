@@ -176,9 +176,12 @@ const commands = {
   },
   'help': (msg) => {
     let tosend = ['```',
+    'Messages prefixed with ".!" will only work if given by an admin.',
+    '',
     '.iam <role>: Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you.',
-    '.clear: Clears all the roles the bot can take off you.', '.join : The bot will join the voice channel of the message\'s sender.',
-    '.leave : The bot will leave all voice channels on the server.',
+    '.clear: Clears all the roles the bot can take off you.',
+    '.!join : The bot will join the voice channel of the message\'s sender.',
+    '.!leave : The bot will leave all voice channels on the server.',
     '.quality <number>: Sets the music quality. Number must be between 1 and 5 inclusive. 5 is complete lossless.',
     '.add <url>: Adds a valid youtube link to the queue.', '.queue : Shows the current queue, up to 15 songs shown.',
     '.play : Play the music queue.',
@@ -205,12 +208,13 @@ bot.on('message', msg => {
       console.err(`\n-------\n${e}\n-------\n`);
       errors = errors + e + '\n-------\n';
     }
-  }
-  try {
-    if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
-  } catch (e) {
-    console.error(`\n-------\n${e}\n-------\n`);
-    errors = errors + e + '\n-------\n';
+  } else {
+    try {
+      if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
+    } catch (e) {
+      console.error(`\n-------\n${e}\n-------\n`);
+      errors = errors + e + '\n-------\n';
+    }
   }
 });
 
