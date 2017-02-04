@@ -1,20 +1,31 @@
 {
   "name": "Colorizer-bot",
-  "version": "0.0.1",
-  "description": "",
+  "version": "0.0.2",
+  "description": "A discord bot for letting guild members assign themselves pre-made roles for colors (and other purposes) - also comes with some miscellaneous sugar.",
   "main": "bot.js",
+  "keywords": [
+    "discord",
+    "discordjs",
+    "bot",
+    "color",
+    "colour"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deventio7/discord-colorizer"
+  },
   "author": "deventio7",
-  "liscense": "Apache",
+  "license": "Apache-2.0",
   "dependencies": {
     "discord.js": "^11.0.0",
     "lodash": "^4.17.4",
     "node-opus": "^0.2.4",
     "request": "^2.79.0",
-    "ytdl-core": "^0.7.23"
+    "ytdl-core": "^0.8.1"
   },
   "scripts": {
     "start": "node bot.js",
-    "build-deploy": "git pull; npm install; node bot.js > bot.log 2> bot.err &",
+    "build-deploy": "git pull; npm update --save; npm install; node bot.js > bot.log 2> bot.err &",
     "deploy": "git pull; node bot.js > bot.log 2> bot.err &"
   }
 }
