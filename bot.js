@@ -91,7 +91,7 @@ const commands = {
   },
   'iamn': (msg) => {
     var authorRoles = msg.guild.member(msg.author).roles;
-    var roleName = msg.content.match(/^.iam (.*)/i)[1];
+    var roleName = msg.content.match(/^.iamn (.*)/i)[1];
     var paramRole = msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()});
     if (!msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()})) {
       var sentMsgPromise = msg.channel.sendMessage('Could not find role ' + roleName + ', ' + msg.author.username + '!');
