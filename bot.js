@@ -100,7 +100,7 @@ const commands = {
       var roleId = paramRole.id;
       roleName = paramRole.name;
       var removeRolePromise = msg.guild.member(msg.author).removeRole(roleId);
-      addRolePromise.then(() => {
+      removeRolePromise.then(() => {
         var sentMsgPromise = msg.channel.sendMessage('Removed role ' + roleName + ' from you, ' + msg.author.username + '!');
         sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
       })
