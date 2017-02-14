@@ -89,6 +89,30 @@ const commands = {
       sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
     }
   },
+  'iamn': (msg) => {
+    var authorRoles = msg.guild.member(msg.author).roles;
+    var roleName = msg.content.match(/^.iam (.*)/i)[1];
+    var paramRole = msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()});
+    if (!msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()})) {
+      var sentMsgPromise = msg.channel.sendMessage('Could not find role ' + roleName + ', ' + msg.author.username + '!');
+      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+    } else if (msg.guild.member(bot.user).roles.has(paramRole.id)) {
+      var roleId = paramRole.id;
+      roleName = paramRole.name;
+      var removeRolePromise = msg.guild.member(msg.author).removeRole(roleId);
+      addRolePromise.then(() => {
+        var sentMsgPromise = msg.channel.sendMessage('Removed role ' + roleName + ' from you, ' + msg.author.username + '!');
+        sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+      })
+      .catch(() => {
+        var sentMsgPromise = msg.channel.sendMessage('Removing role failed for unknown reason - likely because of incorrect role hierachy! Please let your moderators know about this failure!');
+        sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+      });
+    } else {
+      var sentMsgPromise = msg.channel.sendMessage('I do not have access to role ' + roleName + ', ' + msg.author.username + '!');
+      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+    }
+  },
   'play': (msg) => {
     if (queue[msg.guild.id] === undefined) return msg.channel.sendMessage(`Add some songs to the queue first with .add!`);
     if (!msg.guild.voiceConnection) {
@@ -180,10 +204,11 @@ const commands = {
     let tosend = ['```',
     'Messages prefixed with ".!" will only work if given by an admin.',
     '',
-    '.iam <role>: Gives you a role. If you have any other roles that the bot possesses, it will attempt to remove the others for you.',
-    '.clear: Clears all the roles the bot can take off you.',
     '.!join : The bot will join the voice channel of the message\'s sender.',
     '.!leave : The bot will leave all voice channels on the server.',
+    '.iam <role>: Gives you a role. If you have any other roles with colours that the bot possesses, it will attempt to remove the others for you.',
+    '.iamn <role>: Removes a role from you.',
+    '.clear: Clears all the roles the bot can take off you.',
     '.quality <number>: Sets the music quality. Number must be between 1 and 5 inclusive. 5 is complete lossless.',
     '.add <url>: Adds a valid youtube link to the queue.', '.queue : Shows the current queue, up to 15 songs shown.',
     '.play : Play the music queue.',
@@ -196,6 +221,7 @@ const commands = {
     '.time : Shows the playtime of the song.',
     '.volume+(+++) : Increases the volume by 2%/+.',
     '.volume-(---) : Decreases the volume by 2%/-.',
+    '.volume <number> : Sets the volume to the percentage of the number',
     '```'];
     msg.channel.sendMessage(tosend.join('\n')).then(() => {msg.delete();});
   },
