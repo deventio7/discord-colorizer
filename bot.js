@@ -45,7 +45,7 @@ const admCommands = {
     });
   },
   'abuse': (msg) => {
-    if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}; }
+    if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
     state[msg.guild.id].abusing.push(msg.mentions.users.firstKey());
     var abuserFunction = function (id) {
       var temp = new Promise((resolve, reject) => {
