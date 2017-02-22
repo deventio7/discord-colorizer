@@ -23,7 +23,13 @@ bot.on('ready', () => {
 
 var errors = '';
 let queue = {};
-var state = [];
+var state = {};
+
+class GuildState {
+  constructor() {
+    return;
+  }
+}
 
 const admCommands = {
   'leave': (msg) => {
@@ -38,6 +44,7 @@ const admCommands = {
     });
   },
   'abuse': (msg) => {
+    if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState(); }
     state[msg.guild.id].abusing = state[msg.guild.id].abusing ? state[msg.guild.id].abusing.push(msg.mentions.users.firstKey()) : [msg.mentions.users.firstKey()];
     var abuserFunction = function (id) {
       var temp = new Promise((resolve, reject) => {
@@ -45,7 +52,7 @@ const admCommands = {
           bot.fetchUser(id).then((user) => {
             msg.channel.send('', {reply: user});
           });
-          setTimeout(resolve, 10000, id);
+          setTimeout(resolve, Math.floor(Math.random()*10000)+10000, id);
         } else {
           reject();
         }
