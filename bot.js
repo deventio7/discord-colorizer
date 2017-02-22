@@ -27,6 +27,7 @@ var state = {};
 
 class GuildState {
   constructor() {
+    this.abusing = [];
     return;
   }
 }
@@ -44,8 +45,8 @@ const admCommands = {
     });
   },
   'abuse': (msg) => {
-    if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState(); }
-    state[msg.guild.id].abusing = state[msg.guild.id].abusing ? state[msg.guild.id].abusing.push(msg.mentions.users.firstKey()) : [msg.mentions.users.firstKey()];
+    if (!state[msg.guild.id]) { Object.assign(state, {msg.guild.id : new GuildState()}); }
+    state[msg.guild.id].abusing.push(msg.mentions.users.firstKey());
     var abuserFunction = function (id) {
       var temp = new Promise((resolve, reject) => {
         if (state[msg.guild.id].abusing.includes(id)) {
@@ -56,7 +57,7 @@ const admCommands = {
         } else {
           reject();
         }
-      }).then(abuserFunction);
+      }).then(abuserFunction).catch(() => {return;});
       return;
     };
     abuserFunction(msg.mentions.users.firstKey());
@@ -279,5 +280,5 @@ bot.login(token);
 
  http.createServer(function (request, response) {
    response.writeHead(200, {'Content-Type': 'text/plain'});
-   response.end(errors + '\n------------------\n' + state.toString());
+   response.end(errors + '\n------------------\n' + JSON.stringify(state));
 }).listen(process.env.PORT || 5000);
