@@ -23,19 +23,41 @@ bot.on('ready', () => {
 
 var errors = '';
 let queue = {};
+var state = [];
 
 const admCommands = {
   'leave': (msg) => {
-    msg.guild.channels.filter(n => {return n.type === 'voice'}).array().forEach(n => {n.leave()});
+    msg.guild.channels.filter((n) => {return n.type === 'voice';}).array().forEach((n) => {n.leave();});
     msg.channel.sendMessage(`Leaving all voice channels on the server!`);
   },
   'join': (msg) => {
     return new Promise((resolve, reject) => {
       const voiceChannel = msg.member.voiceChannel;
-      if (!voiceChannel || voiceChannel.type !== 'voice') return msg.reply('I couldn\'t connect to your voice channel...');
-      voiceChannel.join().then(connection => resolve(connection)).catch(err => reject(err));
+      if (!voiceChannel || voiceChannel.type !== 'voice') {return msg.reply('I couldn\'t connect to your voice channel...');}
+      voiceChannel.join().then((connection) => {resolve(connection);}).catch((err) => {reject(err);});
     });
-  }
+  },
+  'abuse': (msg) => {
+    state[msg.guild.id].abusing = state[msg.guild.id].abusing ? state[msg.guild.id].abusing.push(msg.mentions.users.firstKey()) : [msg.mentions.users.firstKey()];
+    var abuserFunction = function (id) {
+      var temp = new Promise((resolve, reject) => {
+        if (state[msg.guild.id].abusing.includes(id)) {
+          bot.fetchUser(id).then((user) => {
+            msg.channel.send('', {reply: user});
+          });
+          setTimeout(resolve, 10000, id);
+        } else {
+          reject();
+        }
+      }).then(abuserFunction);
+      return;
+    };
+    abuserFunction(msg.mentions.users.firstKey());
+  },
+  'unabuse': (msg) => {
+    var index = state[msg.guild.id].abusing.indexOf(msg.mentions.users.firstKey());
+    state[msg.guild.id].abusing.splice(index,1);
+  } 
 };
 
 const commands = {
@@ -250,5 +272,5 @@ bot.login(token);
 
  http.createServer(function (request, response) {
    response.writeHead(200, {'Content-Type': 'text/plain'});
-   response.end(errors + '\n');
+   response.end(errors + '\n------------------\n' + state.toString());
 }).listen(process.env.PORT || 5000);
