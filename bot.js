@@ -255,7 +255,7 @@ bot.on('message', msg => {
     try {
       if (admCommands.hasOwnProperty(msg.content.toLowerCase().slice(2).split(' ')[0])) admCommands[msg.content.toLowerCase().slice(2).split(' ')[0]](msg);
     } catch (e) {
-      console.err(`\n-------\n${e}\n-------\n`);
+      console.error(`\n-------\n${e}\n-------\n`);
       errors = errors + e + '\n-------\n';
     }
   } else {
