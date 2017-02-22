@@ -46,24 +46,34 @@ const admCommands = {
   },
   'abuse': (msg) => {
     if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
-    state[msg.guild.id].abusing.push(msg.mentions.users.firstKey());
-    var abuserFunction = function (id, guildid) {
+    var abuseName = msg.content.match(/.*name:(.*)/i);
+    if (abuseName) {
+      abuseName = abuseName[1];
+    } else {
+      msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
+      return;
+    }
+    state[msg.guild.id].abusing.push({id: msg.mentions.users.firstKey(), name:abuseName});
+    var abuserFunction = function (params) {
+      var abuseName = params.abuseName;
+      var id = params.id;
+      var guildId = params.guildId;
       var temp = new Promise((resolve, reject) => {
-        if (state[guildid].abusing.includes(id)) {
-          bot.fetchUser(id).then((user) => {
-            msg.channel.send('', {reply: user});
+        if (state[guildId].abusing.some((e) => {return e.id === id;})) {
+          msg.guild.fetchMember(id).then((member) => {
+            member.setNickname(abuseName).catch((e) => {console.error(e);});
           });
-          setTimeout(resolve, Math.floor(Math.random()*10000)+10000, id);
+          setTimeout(resolve, Math.floor(Math.random()*2000)+2000, {"id": id, "guildId": guildId, "abuseName":abuseName});
         } else {
           reject();
         }
       }).then(abuserFunction).catch(() => {return;});
       return;
     };
-    abuserFunction(msg.mentions.users.firstKey(), msg.guild.id);
+    abuserFunction({"id": msg.mentions.users.firstKey(), "guildId":msg.guild.id, "abuseName":abuseName});
   },
   'unabuse': (msg) => {
-    var index = state[msg.guild.id].abusing.indexOf(msg.mentions.users.firstKey());
+    var index = state[msg.guild.id].abusing.findIndex((e) => {return e.id == msg.mentions.users.firstKey()});
     state[msg.guild.id].abusing.splice(index,1);
   } 
 };
