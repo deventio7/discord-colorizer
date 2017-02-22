@@ -47,9 +47,9 @@ const admCommands = {
   'abuse': (msg) => {
     if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
     state[msg.guild.id].abusing.push(msg.mentions.users.firstKey());
-    var abuserFunction = function (id) {
+    var abuserFunction = function (id, guildid) {
       var temp = new Promise((resolve, reject) => {
-        if (state[msg.guild.id].abusing.includes(id)) {
+        if (state[guildid].abusing.includes(id)) {
           bot.fetchUser(id).then((user) => {
             msg.channel.send('', {reply: user});
           });
@@ -60,7 +60,7 @@ const admCommands = {
       }).then(abuserFunction).catch(() => {return;});
       return;
     };
-    abuserFunction(msg.mentions.users.firstKey());
+    abuserFunction(msg.mentions.users.firstKey(), msg.guild.id);
   },
   'unabuse': (msg) => {
     var index = state[msg.guild.id].abusing.indexOf(msg.mentions.users.firstKey());
