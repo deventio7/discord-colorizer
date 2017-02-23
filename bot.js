@@ -53,15 +53,15 @@ const admCommands = {
       msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
       return;
     }
-    var index = state[msg.guild.id].abusing.findIndex((e) => {return e.id == msg.mentions.users.firstKey()});
-    if (index > -1) {state[msg.guild.id].abusing.splice(index,1);}
+    // var index = state[msg.guild.id].abusing.findIndex((e) => {return e.id == msg.mentions.users.firstKey()});
+    // if (index > -1) {state[msg.guild.id].abusing.splice(index,1);}
     state[msg.guild.id].abusing.push({id: msg.mentions.users.firstKey(), name:abuseName});
     var abuserFunction = function (params) {
       var abuseName = params.abuseName;
       var id = params.id;
       var guildId = params.guildId;
       var temp = new Promise((resolve, reject) => {
-        if (state[guildId].abusing.some((e) => {return e.id === id;})) {
+        if (state[guildId].abusing.some((e) => {return e.id === id && e.name === abuseName;})) {
           msg.guild.fetchMember(id).then((member) => {
             member.setNickname(abuseName).catch((e) => {console.error(e);});
           });
