@@ -53,6 +53,8 @@ const admCommands = {
       msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
       return;
     }
+    var index = state[msg.guild.id].abusing.findIndex((e) => {return e.id == msg.mentions.users.firstKey()});
+    if (index > -1) {state[msg.guild.id].abusing.splice(index,1);}
     state[msg.guild.id].abusing.push({id: msg.mentions.users.firstKey(), name:abuseName});
     var abuserFunction = function (params) {
       var abuseName = params.abuseName;
@@ -63,7 +65,7 @@ const admCommands = {
           msg.guild.fetchMember(id).then((member) => {
             member.setNickname(abuseName).catch((e) => {console.error(e);});
           });
-          setTimeout(resolve, Math.floor(Math.random()*2000)+2000, {"id": id, "guildId": guildId, "abuseName":abuseName});
+          setTimeout(resolve, Math.floor(Math.random()*10000)+10000, {"id": id, "guildId": guildId, "abuseName":abuseName});
         } else {
           reject();
         }
@@ -74,7 +76,7 @@ const admCommands = {
   },
   'unabuse': (msg) => {
     var index = state[msg.guild.id].abusing.findIndex((e) => {return e.id == msg.mentions.users.firstKey()});
-    state[msg.guild.id].abusing.splice(index,1);
+    if (index > -1) {state[msg.guild.id].abusing.splice(index,1);}
   } 
 };
 
