@@ -61,7 +61,7 @@ bot.on('ready', () => {
     state.keys().forEach((guildId) => {
       bot.guilds[guildId].roles[state[guildId].rainbow].setColor(Math.floor(Math.random() * 16777216))
         .catch((e) => {console.error(e);});
-    }
+    });
   }, 5000);
 });
 
