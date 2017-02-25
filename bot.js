@@ -83,7 +83,7 @@ const admCommands = {
     var abuseMatch = msg.content.match(/.*<([0123456789]+)>.*name:(.*)/i);
     if (abuseMatch) {
       var abuseName = abuseMatch[2];
-      var abuseId = abuseMatch[1]
+      var abuseId = abuseMatch[1];
     } else {
       msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
       return;
@@ -98,7 +98,7 @@ const admCommands = {
   'unabuse': (msg) => {
     var abuseMatch = msg.content.match(/.*<([0123456789]+)>/i);
     if (abuseMatch) {
-      var abuseId = abuseMatch[1]
+      var abuseId = abuseMatch[1];
     } else {
       msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
       return;
@@ -109,9 +109,9 @@ const admCommands = {
     }).catch(() => {msg.channel.send('Not a valid user ID!');});
   },
   'rainbow': (msg) => {
-    var rainbowMatch = msg.content.match(/.*<([0123456789]+)>/i);
+    var rainbowMatch = msg.content.match(/.*<([&0123456789]+)>/i);
     if (rainbowMatch) {
-      var roleId = rainbowMatch[1]
+      var roleId = rainbowMatch[1];
     } else {
       msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
       return;
