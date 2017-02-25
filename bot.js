@@ -109,7 +109,7 @@ const admCommands = {
     }).catch(() => {msg.channel.send('Not a valid user ID!');});
   },
   'rainbow': (msg) => {
-    var rainbowMatch = msg.content.match(/.*<([&0123456789]+)>/i);
+    var rainbowMatch = msg.content.match(/.*<(.+)>/i);
     if (rainbowMatch) {
       var roleId = rainbowMatch[1];
     } else {
@@ -117,6 +117,7 @@ const admCommands = {
       return;
     }
     if(msg.guild.roles[roleId]) {
+      console.log(msg.guild.roles.keyArray());
       state[msg.guild.id].rainbow = roleId;
       saveState();
     } else {
