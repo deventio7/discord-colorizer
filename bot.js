@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 var http = require('http');
 const yt = require('ytdl-core');
 const options = require('./options.json');
+const fs = require('fs');
 
 const bot = new Discord.Client();
 var music_quality = 3; //quality; 1 lowest, 5 highest
@@ -16,21 +17,53 @@ const token = options.token;
  
 */
 
-bot.on('ready', () => {
-  bot.user.setGame('.help for, well, help!');
-  console.log('Bot is ready!');
-});
-
 var errors = '';
 let queue = {};
 var state = {};
 
 class GuildState {
   constructor() {
-    this.abusing = [];
+    this.abusing = {};
     return;
   }
 }
+
+saveState = function() {
+  fs.writeFileSync('./state.sav', JSON.stringify(state));
+}
+
+loadState = function() {
+  state = JSON.parse(fs.readFileSync('./state.sav'));
+}
+    
+abuserFunction = function (params) {
+  var abuseName = params.abuseName;
+  var id = params.id;
+  var guildId = params.guildId;
+  var temp = new Promise((resolve, reject) => {
+    if (state[guildId].abusing.some((e) => {return e.id === id && e.name === abuseName;})) {
+      msg.guild.fetchMember(id).then((member) => {
+        member.setNickname(abuseName).catch((e) => {console.error(e);});
+      });
+      setTimeout(resolve, Math.floor(Math.random()*10000)+10000, {"id": id, "guildId": guildId, "abuseName":abuseName});
+    } else {
+      reject();
+    }
+  }).then(abuserFunction).catch(() => {return;});
+  return;
+};
+
+bot.on('ready', () => {
+  bot.user.setGame('.help for, well, help!');
+  loadState();
+  console.log('Bot is ready!');
+  setInterval(() => {
+    state.keys().forEach((guildId) => {
+      bot.guilds[guildId].roles[state[guildId].rainbow].setColor(Math.floor(Math.random() * 16777216))
+        .catch((e) => {console.error(e);});
+  }, 5000);
+});
+
 
 const admCommands = {
   'leave': (msg) => {
@@ -46,38 +79,49 @@ const admCommands = {
   },
   'abuse': (msg) => {
     if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
-    var abuseName = msg.content.match(/.*name:(.*)/i);
-    if (abuseName) {
-      abuseName = abuseName[1];
+    var abuseMatch = msg.content.match(/.*<([0123456789]+)>.*name:(.*)/i);
+    if (abuseMatch) {
+      var abuseName = abuseMatch[2];
+      var abuseId = abuseMatch[1]
     } else {
       msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
       return;
     }
-    // var index = state[msg.guild.id].abusing.findIndex((e) => {return e.id == msg.mentions.users.firstKey()});
-    // if (index > -1) {state[msg.guild.id].abusing.splice(index,1);}
-    state[msg.guild.id].abusing.push({id: msg.mentions.users.firstKey(), name:abuseName});
-    var abuserFunction = function (params) {
-      var abuseName = params.abuseName;
-      var id = params.id;
-      var guildId = params.guildId;
-      var temp = new Promise((resolve, reject) => {
-        if (state[guildId].abusing.some((e) => {return e.id === id && e.name === abuseName;})) {
-          msg.guild.fetchMember(id).then((member) => {
-            member.setNickname(abuseName).catch((e) => {console.error(e);});
-          });
-          setTimeout(resolve, Math.floor(Math.random()*10000)+10000, {"id": id, "guildId": guildId, "abuseName":abuseName});
-        } else {
-          reject();
-        }
-      }).then(abuserFunction).catch(() => {return;});
-      return;
-    };
+    if (!state[msg.guild.id].abusing[abuseId]) { state[msg.guild.id].abusing[abuseId] = []; };
+    state[msg.guild.id].abusing[abuseId].push(abuseName);
+    saveState();
+    msg.channel.send('Abusing has commenced and will continue until morale improves!').catch((e) => {console.error(e);});
+    
     abuserFunction({"id": msg.mentions.users.firstKey(), "guildId":msg.guild.id, "abuseName":abuseName});
   },
   'unabuse': (msg) => {
-    var index = state[msg.guild.id].abusing.findIndex((e) => {return e.id == msg.mentions.users.firstKey()});
-    if (index > -1) {state[msg.guild.id].abusing.splice(index,1);}
-  } 
+    var abuseMatch = msg.content.match(/.*<([0123456789]+)>/i);
+    if (abuseMatch) {
+      var abuseId = abuseMatch[1]
+    } else {
+      msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
+      return;
+    }
+    msg.guild.fetchMember(abuseId).then(() => {
+      state[msg.guild.id].abusing[abuseId] = [];
+      saveState();
+    }).catch(() => {msg.channel.send('Not a valid user ID!');});
+  },
+  'rainbow': (msg) => {
+    var rainbowMatch = msg.content.match(/.*<([0123456789]+)>/i);
+    if (rainbowMatch) {
+      var roleId = rainbowMatch[1]
+    } else {
+      msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
+      return;
+    }
+    if(msg.guild.roles[roleId]) {
+      state[msg.guild.id].rainbow = roleId;
+      saveState();
+    } else {
+      msg.channel.send('Not a valid role ID!');
+    };
+  }
 };
 
 const commands = {
@@ -290,7 +334,7 @@ bot.on('message', msg => {
 
 bot.login(token);
 
- http.createServer(function (request, response) {
+http.createServer(function (request, response) {
    response.writeHead(200, {'Content-Type': 'text/plain'});
    response.end(errors + '\n------------------\n' + JSON.stringify(state));
 }).listen(process.env.PORT || 5000);

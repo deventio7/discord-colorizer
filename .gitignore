@@ -2,3 +2,4 @@ node_modules/
 *.log
 *.err
 options.json
+state.sav
