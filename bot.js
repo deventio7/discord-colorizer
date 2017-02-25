@@ -58,7 +58,7 @@ bot.on('ready', () => {
   loadState();
   console.log('Bot is ready!');
   setInterval(() => {
-    state.keys().forEach((guildId) => {
+    Object.keys(state).forEach((guildId) => {
       bot.guilds[guildId].roles[state[guildId].rainbow].setColor(Math.floor(Math.random() * 16777216))
         .catch((e) => {console.error(e);});
     });
