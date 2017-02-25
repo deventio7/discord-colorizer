@@ -1,0 +1,3 @@
+To run the bot, get the required npm packages with npm install, then rename the options.json.example to options.json and fill it out!
+
+Also, at the moment, state.sav must also contain exactly '{}' when you first start the bot!

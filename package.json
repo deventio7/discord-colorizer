@@ -26,6 +26,7 @@
   "scripts": {
     "start": "node bot.js",
     "build-deploy": "git pull; npm update --save; npm install; node bot.js > bot.log 2> bot.err &",
-    "deploy": "git pull; node bot.js > bot.log 2> bot.err &"
+    "deploy": "node bot.js > bot.log 2> bot.err &",
+    "redeploy": "pkill 'node'; node bot.js > bot.log 2> bot.err &"
   }
 }
