@@ -7,17 +7,20 @@ const fs = require('fs');
 const bot = new Discord.Client();
 var music_quality = 3; //quality; 1 lowest, 5 highest
 const token = options.token;
+const devUser = options.devUser;
 
 /*TODO
 
  - implement playlist shuffle
+ - implement persistent volume
  - implement single/playlist loop
  - implement welcome/farewell messages
- 
+ - move user abuse into global rainbow loop
+
 */
 
 var errors = '';
-let queue = {};
+var queue = {};
 var state = {};
 
 class GuildState {
@@ -25,6 +28,12 @@ class GuildState {
     this.abusing = {};
     return;
   }
+}
+
+errorMessage = function(message) {
+  let d = new Date();
+  console.error(`[ERROR]${d.toString().split(' (')[0]}: ${message}`);
+  errors = errors + `[ERROR]${d.toString().split(' (')[0]}: ${message}\n-------\n`;
 }
 
 saveState = function() {
@@ -42,7 +51,7 @@ abuserFunction = function (params) {
   var temp = new Promise((resolve, reject) => {
     if (state[guildId].abusing[id].some((e) => {return e === abuseName;})) {
       bot.guilds.get(guildId).fetchMember(id).then((member) => {
-        member.setNickname(abuseName).catch((e) => {console.error(e);});
+        member.setNickname(abuseName).catch((e) => {errorMessage(e.response.error.text);});
       });
       setTimeout(resolve, Math.floor(Math.random()*10000)+10000, {"id": id, "guildId": guildId, "abuseName":abuseName});
     } else {
@@ -60,7 +69,7 @@ bot.on('ready', () => {
     Object.keys(state).forEach((guildId) => {
       if (!state[guildId].rainbow) {return;}
       bot.guilds.get(guildId).roles.get(state[guildId].rainbow).setColor(Math.floor(Math.random() * 16777216))
-        .catch((e) => {console.error(e);});
+        .catch((e) => {errorMessage(e);});
     });
   }, 5000);
 });
@@ -85,13 +94,13 @@ const admCommands = {
       var abuseName = abuseMatch[2];
       var abuseId = abuseMatch[1];
     } else {
-      msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
+      msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
       return;
     }
     if (!state[msg.guild.id].abusing[abuseId]) { state[msg.guild.id].abusing[abuseId] = []; };
     state[msg.guild.id].abusing[abuseId].push(abuseName);
     saveState();
-    msg.channel.send('Abusing has commenced and will continue until morale improves!').catch((e) => {console.error(e);});
+    msg.channel.send('Abusing has commenced and will continue until morale improves!').catch((e) => {errorMessage(e);});
     abuserFunction({"id":abuseId, "guildId":msg.guild.id, "abuseName":abuseName});
   },
   'unabuse': (msg) => {
@@ -99,7 +108,7 @@ const admCommands = {
     if (abuseMatch) {
       var abuseId = abuseMatch[1];
     } else {
-      msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
+      msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
       return;
     }
     msg.guild.fetchMember(abuseId).then(() => {
@@ -107,7 +116,7 @@ const admCommands = {
         delete state[msg.guild.id].abusing[abuseId];
         saveState();
       }
-      msg.channel.send('Morale has improved, and the abuse will stop!').catch((e) => {console.error(e);});
+      msg.channel.send('Morale has improved, and the abuse will stop!').catch((e) => {errorMessage(e);});
     }).catch(() => {msg.channel.send('Not a valid user ID!');});
   },
   'rainbow': (msg) => {
@@ -116,7 +125,7 @@ const admCommands = {
     if (rainbowMatch) {
       var roleId = rainbowMatch[1];
     } else {
-      msg.channel.send('Incorrect syntax!').catch((e) => {console.error(e);});
+      msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
       return;
     }
     if(msg.guild.roles.get(roleId)) {
@@ -144,11 +153,11 @@ const commands = {
     var setRolePromise = msg.guild.member(msg.author).setRoles(authorRoles.filter(n => {return (intersectingRoles.indexOf(n.id) == -1 )}));
     setRolePromise.then(() => {
       var sentMsgPromise = msg.channel.sendMessage('Cleared your color role(s), ' + msg.author.username + '!');
-      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of msg ' + sent.content);});
+      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of msg ' + sent.content);});
     })
     .catch(() => {
       var sentMsgPromise = msg.channel.sendMessage('Clearing role failed for unknown reason - likely because of incorrect role hierachy! Please let your moderators know about this failure!');
-      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
     });
   },
   'iam': (msg) => {
@@ -157,7 +166,7 @@ const commands = {
     var paramRole = msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()});
     if (!msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()})) {
       var sentMsgPromise = msg.channel.sendMessage('Could not find role ' + roleName + ', ' + msg.author.username + '!');
-      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
     } else if (msg.guild.member(bot.user).roles.has(paramRole.id)) {
       var roleId = paramRole.id;
       roleName = paramRole.name;
@@ -166,26 +175,26 @@ const commands = {
         var setRolePromise = msg.guild.member(msg.author).setRoles(authorRoles.filter(n => {return intersectingColorRoles.indexOf(n.id) == -1}).concat(msg.guild.roles.filter(n => {return n  .id == roleId})));
         setRolePromise.then(() => {
           var sentMsgPromise = msg.channel.sendMessage('Replaced your color role(s) with ' + roleName + ', ' + msg.author.username + '!');
-          sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+          sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
         })
         .catch(() => {
           var sentMsgPromise = msg.channel.sendMessage('Replacing role failed for unknown reason - likely because of incorrect role hierachy! Please let your moderators know about this failure!');
-          sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+          sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
         });
       } else {
         var addRolePromise = msg.guild.member(msg.author).addRole(roleId);
         addRolePromise.then(() => {
           var sentMsgPromise = msg.channel.sendMessage('Gave you role ' + roleName + ', ' + msg.author.username + '!');
-          sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+          sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
         })
         .catch(() => {
           var sentMsgPromise = msg.channel.sendMessage('Assigning role failed for unknown reason - likely because of incorrect role hierachy! Please let your moderators know about this failure!');
-          sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+          sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
         });
       }
     } else {
       var sentMsgPromise = msg.channel.sendMessage('I do not have access to role ' + roleName + ', ' + msg.author.username + '!');
-      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
     }
   },
   'iamn': (msg) => {
@@ -194,22 +203,22 @@ const commands = {
     var paramRole = msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()});
     if (!msg.guild.roles.find(n => {return n.name.toLowerCase() === roleName.toLowerCase()})) {
       var sentMsgPromise = msg.channel.sendMessage('Could not find role ' + roleName + ', ' + msg.author.username + '!');
-      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
     } else if (msg.guild.member(bot.user).roles.has(paramRole.id)) {
       var roleId = paramRole.id;
       roleName = paramRole.name;
       var removeRolePromise = msg.guild.member(msg.author).removeRole(roleId);
       removeRolePromise.then(() => {
         var sentMsgPromise = msg.channel.sendMessage('Removed role ' + roleName + ' from you, ' + msg.author.username + '!');
-        sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+        sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
       })
       .catch(() => {
         var sentMsgPromise = msg.channel.sendMessage('Removing role failed for unknown reason - likely because of incorrect role hierachy! Please let your moderators know about this failure!');
-        sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+        sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
       });
     } else {
       var sentMsgPromise = msg.channel.sendMessage('I do not have access to role ' + roleName + ', ' + msg.author.username + '!');
-      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); console.log('Failed delivery of message ' + sent.content);});
+      sentMsgPromise.then(sent => {sent.delete(3000); msg.delete(3000);}).catch(sent => {sent.delete(); errorMessage('Failed delivery of message ' + sent.content);});
     }
   },
   'play': (msg) => {
@@ -328,19 +337,17 @@ const commands = {
 
 bot.on('message', msg => {
   if (!msg.content.startsWith('.')) return;
-  if (msg.content.startsWith('.!') && msg.member.permissions.hasPermission("ADMINISTRATOR")) {
+  if (msg.content.startsWith('.!') && (msg.member.permissions.hasPermission("ADMINISTRATOR") || msg.author.id === devUser)) {
     try {
       if (admCommands.hasOwnProperty(msg.content.toLowerCase().slice(2).split(' ')[0])) admCommands[msg.content.toLowerCase().slice(2).split(' ')[0]](msg);
     } catch (e) {
-      console.error(`\n-------\n${e}\n-------\n`);
-      errors = errors + e + '\n-------\n';
+      errorMessage(`\n-------\n${e}\n-------\n`);
     }
   } else {
     try {
       if (commands.hasOwnProperty(msg.content.toLowerCase().slice(1).split(' ')[0])) commands[msg.content.toLowerCase().slice(1).split(' ')[0]](msg);
     } catch (e) {
-      console.error(`\n-------\n${e}\n-------\n`);
-      errors = errors + e + '\n-------\n';
+      errorMessage(`\n-------\n${e}\n-------\n`);
     }
   }
 });

@@ -1,3 +1,4 @@
 {
-    "token" : "YOUR_TOKEN_HERE"
+    "token" : "YOUR_TOKEN_HERE",
+    "devUser" : "YOUR_DISCORD_ID_HERE"
 }
