@@ -3,6 +3,7 @@ var http = require('http');
 const yt = require('ytdl-core');
 const options = require('./options.json');
 const fs = require('fs');
+const _ = require('lodash');
 
 const bot = new Discord.Client();
 var music_quality = 3; //quality; 1 lowest, 5 highest
@@ -25,7 +26,8 @@ var state = {};
 
 class GuildState {
   constructor() {
-    this.abusing = {};
+    this.renaming = {};
+    this.timedRoles = {};
     return;
   }
 }
@@ -44,20 +46,20 @@ loadState = function() {
   state = JSON.parse(fs.readFileSync('./state.sav'));
 }
     
-abuserFunction = function (params) {
-  var abuseName = params.abuseName;
+renamerFunction = function (params) {
+  var renameName = params.renameName;
   var id = params.id;
   var guildId = params.guildId;
   var temp = new Promise((resolve, reject) => {
-    if (state[guildId].abusing[id].some((e) => {return e === abuseName;})) {
+    if (state[guildId].renaming[id].some((e) => {return e === renameName;})) {
       bot.guilds.get(guildId).fetchMember(id).then((member) => {
-        member.setNickname(abuseName).catch((e) => {errorMessage(e.response.error.text);});
+        member.setNickname(renameName).catch((e) => {errorMessage(e.response.error.text);});
       });
-      setTimeout(resolve, Math.floor(Math.random()*10000)+10000, {"id": id, "guildId": guildId, "abuseName":abuseName});
+      setTimeout(resolve, Math.floor(Math.random()*10000)+10000, {"id": id, "guildId": guildId, "renameName":renameName});
     } else {
       reject();
     }
-  }).then(abuserFunction).catch(() => {return;});
+  }).then(renamerFunction).catch(() => {return;});
   return;
 }
 
@@ -67,13 +69,48 @@ bot.on('ready', () => {
   console.log('Bot is ready!');
   setInterval(() => {
     Object.keys(state).forEach((guildId) => {
-      if (!state[guildId].rainbow) {return;}
-      bot.guilds.get(guildId).roles.get(state[guildId].rainbow).setColor(Math.floor(Math.random() * 16777216))
-        .catch((e) => {errorMessage(e);});
+      var guild = bot.guilds.get(guildId);      
+
+      //rainbow
+      if (state[guildId].rainbow) {
+        guild.roles.get(state[guildId].rainbow).setColor(Math.floor(Math.random() * 16777216))
+          .catch((e) => {errorMessage(e);});
+      }
+
+      //removing expired persistent roles
+      var time = new Date().getTime();
+      if (state[guildId].hasOwnProperty('timedRoles')) {
+        Object.keys(state[guildId].timedRoles).forEach((userId) => {
+          Object.keys(state[guildId].timedRoles[userId]).forEach((roleId) => {
+            var timestamp = state[guildId].timedRoles[userId][roleId];
+            if (timestamp > 0 && timestamp < time) {
+              if (guild.member(userId).roles.get(roleId)) {
+                guild.member(userId).removeRole(roleId);
+              }
+              delete state[guildId].timedRoles[userId][roleId];
+              saveState();
+            }
+          });
+          if (_.isEmpty(state[guildId].timedRoles[userId])) {
+            delete state[guildId].timedRoles[userId];
+            saveState();
+          } 
+        });
+      }
+
     });
   }, 5000);
 });
 
+bot.on('guildMemberAdd', (member) => {
+  var userId = member.user.id;
+  var guildId = member.guild.id;
+  if (state[guildId].hasOwnProperty('timedRoles') && state[guildId].timedRoles.hasOwnProperty(userId)) {
+    Object.keys(state[guildId].timedRoles[userId]).forEach((roleId) => {
+      member.addRole(roleId);
+    });
+  }
+});
 
 const admCommands = {
   'leave': (msg) => {
@@ -87,36 +124,36 @@ const admCommands = {
       voiceChannel.join().then((connection) => {resolve(connection);}).catch((err) => {reject(err);});
     });
   },
-  'abuse': (msg) => {
+  'renamerepeat': (msg) => {
     if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
-    var abuseMatch = msg.content.match(/.*<([0123456789]+)>.*name:(.*)/i);
-    if (abuseMatch) {
-      var abuseName = abuseMatch[2];
-      var abuseId = abuseMatch[1];
+    var renameMatch = msg.content.match(/.*<([0123456789]+)>.*name:(.*)/i);
+    if (renameMatch) {
+      var renameName = renameMatch[2];
+      var renameId = renameMatch[1];
     } else {
       msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
       return;
     }
-    if (!state[msg.guild.id].abusing[abuseId]) { state[msg.guild.id].abusing[abuseId] = []; };
-    state[msg.guild.id].abusing[abuseId].push(abuseName);
+    if (!state[msg.guild.id].renaming[renameId]) { state[msg.guild.id].renaming[renameId] = []; };
+    state[msg.guild.id].renaming[renameId].push(renameName);
     saveState();
     msg.channel.send('Abusing has commenced and will continue until morale improves!').catch((e) => {errorMessage(e);});
-    abuserFunction({"id":abuseId, "guildId":msg.guild.id, "abuseName":abuseName});
+    renamerFunction({"id":renameId, "guildId":msg.guild.id, "renameName":renameName});
   },
-  'unabuse': (msg) => {
-    var abuseMatch = msg.content.match(/.*<([0123456789]+)>/i);
-    if (abuseMatch) {
-      var abuseId = abuseMatch[1];
+  'unrenamerepeat': (msg) => {
+    var renameMatch = msg.content.match(/.*<([0123456789]+)>/i);
+    if (renameMatch) {
+      var renameId = renameMatch[1];
     } else {
       msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
       return;
     }
-    msg.guild.fetchMember(abuseId).then(() => {
-      if(state[msg.guild.id].abusing.hasOwnProperty(abuseId)) {
-        delete state[msg.guild.id].abusing[abuseId];
+    msg.guild.fetchMember(renameId).then(() => {
+      if(state[msg.guild.id].renaming.hasOwnProperty(renameId)) {
+        delete state[msg.guild.id].renaming[renameId];
         saveState();
       }
-      msg.channel.send('Morale has improved, and the abuse will stop!').catch((e) => {errorMessage(e);});
+      msg.channel.send('Morale has improved, and the rename will stop!').catch((e) => {errorMessage(e);});
     }).catch(() => {msg.channel.send('Not a valid user ID!');});
   },
   'rainbow': (msg) => {
@@ -144,6 +181,81 @@ const admCommands = {
       msg.channel.send('No rainbow roles to begin with!');
     };
   },
+  'persistentrole': (msg) => {
+    var persistMatch = msg.content.match(/.*<(\d+)> *<(\d+)> *<([-.0123456789]+)>/i);
+    if (persistMatch) {
+      var guildId = msg.guild.id;
+      var userId = persistMatch[1];
+      var roleId = persistMatch[2];
+      var hours = persistMatch[3];
+      if (!(msg.guild.member(userId) && msg.guild.roles.get(roleId))) {
+        msg.channel.send('Invalid userID or roleID!').catch((e) => {errorMessage(e);});
+        return;
+      }
+    } else {
+      msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
+      return;
+    }
+    if (!state[guildId].timedRoles.hasOwnProperty(userId)) {
+      state[guildId].timedRoles[userId] = {};
+    }
+    state[guildId].timedRoles[userId][roleId] = hours < 0 ? -1 : new Date().getTime() + hours * 3600000;
+    saveState();
+    msg.guild.fetchMember(userId).then((member) => {
+      member.addRole(roleId).catch((e) => {errorMessage(e);});
+    });
+    msg.channel.send('Persistent Role Assignment successful!');
+  },
+  'unpersistentrole': (msg) => {
+    var persistMatch = msg.content.match(/.*<(\d+)> *<(\d+)>/i);
+    if (persistMatch) {
+      var guildId = msg.guild.id;
+      var userId = persistMatch[1];
+      var roleId = persistMatch[2];
+      if (!(msg.guild.member(userId) && msg.guild.roles.get(roleId))) {
+        msg.channel.send('Invalid userId or roleId!').catch((e) => {errorMessage(e);});
+        return;
+      }
+    } else {
+      msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
+      return;
+    }
+    if (!state[guildId].hasOwnProperty('timedRoles') && !state[guildId].timedRoles.hasOwnProperty(userId)) {
+      return;
+    }
+    if (state[guildId].timedRoles[userId].hasOwnProperty(roleId)) {
+      if (msg.guild.member(userId).roles.get(roleId)) {
+        msg.guild.member(userId).removeRole(roleId);
+      }
+      delete state[guildId].timedRoles[userId][roleId];
+      if (_.isEmpty(state[guildId].timedRoles[userId])) {
+        delete state[guildId].timedRoles[userId];
+      } 
+      msg.channel.send('Persistent Role Unassignment successful!');
+      saveState();
+    }
+  },
+  'rolelist': (msg) => {
+    var tosend = '```\n';
+    msg.guild.roles.keyArray().forEach((e) => {tosend = tosend + msg.guild.roles.get(e).name + ': ' + e + '\n';});
+    tosend = tosend + '```';
+    console.log(tosend);
+    msg.channel.send(tosend).then(() => {msg.delete();}).catch((e) => {errorMessage(e);});
+  },
+  'help': (msg) => {
+    let tosend = ['```',
+    'Admin-only commands must be prefixed by ".!" instead of ".".',
+    '',
+    '.!join : The bot will join the voice channel of the message\'s sender.',
+    '.!leave : The bot will leave all voice channels on the server.',
+    '.!rainbow <roleId> : The bot will continuously change the color of this role. Only one rainbow role is allowed per server.',
+    '.!unrainbow : The bot will stop changing the color of all rainbow roles on the server.',
+    '.!persistentRole <userId> <roleId> <hours> : The bot will assign the user that role, then remove it after the amount of hours given.',
+    '.!unpersistentRole <userId> <roleId> : The bot will stop persisting the role on that user.',
+    '.!roleList : The bot will print a list of all the roles on the server and their ids.',
+    '```'];
+    msg.channel.sendMessage(tosend.join('\n')).then(() => {msg.delete();});
+  }
 };
 
 const commands = {
@@ -310,10 +422,8 @@ const commands = {
   },
   'help': (msg) => {
     let tosend = ['```',
-    'Messages prefixed with ".!" will only work if given by an admin.',
+    'Here are listed all the avaliable user commands!',
     '',
-    '.!join : The bot will join the voice channel of the message\'s sender.',
-    '.!leave : The bot will leave all voice channels on the server.',
     '.iam <role>: Gives you a role. If you have any other roles with colours that the bot possesses, it will attempt to remove the others for you.',
     '.iamn <role>: Removes a role from you.',
     '.clear: Clears all the roles the bot can take off you.',
