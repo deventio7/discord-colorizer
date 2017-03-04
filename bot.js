@@ -236,10 +236,16 @@ const admCommands = {
     }
   },
   'rolelist': (msg) => {
-    var tosend = '```\n';
-    msg.guild.roles.keyArray().forEach((e) => {tosend = tosend + msg.guild.roles.get(e).name + ': ' + e + '\n';});
-    tosend = tosend + '```';
-    msg.channel.send(tosend).then(() => {msg.delete();}).catch((e) => {errorMessage(e);});
+    var roleMatch = msg.content.match(/rolelist (.*)/i);
+    if (roleMatch) {
+      let role =  msg.guild.roles.find(n => {return n.name.toLowerCase() === roleMatch[1].toLowerCase()});
+      msg.channel.send('```\n' + role.name + ':' + role.id + '\n```');
+    } else {
+      var tosend = '```\n';
+      msg.guild.roles.keyArray().forEach((e) => {tosend = tosend + msg.guild.roles.get(e).name + ': ' + e + '\n';});
+      tosend = tosend + '```';
+      msg.channel.send(tosend).then(() => {msg.delete();}).catch((e) => {errorMessage(e);});
+    }
   },
   'help': (msg) => {
     let tosend = ['```',
