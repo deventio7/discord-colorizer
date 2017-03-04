@@ -182,13 +182,14 @@ const admCommands = {
     };
   },
   'persistentrole': (msg) => {
-    var persistMatch = msg.content.match(/.*<(\d+)> *<(\d+)> *<([-.0123456789]+)>/i);
+    var persistMatch = msg.content.match(/.*<(\d+)> *<(\d+)> *<([-.0123456789]+)> *((-f)?)/i);
     if (persistMatch) {
       var guildId = msg.guild.id;
       var userId = persistMatch[1];
       var roleId = persistMatch[2];
       var hours = parseFloat(persistMatch[3]);
-      if (!(msg.guild.member(userId) && msg.guild.roles.get(roleId) && !_.isNaN(hours))) {
+      var force = persistMatch[4];
+      if (force != '-f' && !(msg.guild.member(userId) && msg.guild.roles.get(roleId) && !_.isNaN(hours))) {
         msg.channel.send('Invalid userID or roleID!').catch((e) => {errorMessage(e);});
         return;
       }
@@ -203,6 +204,7 @@ const admCommands = {
     saveState();
     msg.guild.fetchMember(userId).then((member) => {
       member.addRole(roleId).catch((e) => {errorMessage(e);});
+      msg.channel.send('Adding immediate role to user failed! I hope you know what you're doing...');
     });
     msg.channel.send('Persistent Role Assignment successful!');
   },
