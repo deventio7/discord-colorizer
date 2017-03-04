@@ -187,8 +187,8 @@ const admCommands = {
       var guildId = msg.guild.id;
       var userId = persistMatch[1];
       var roleId = persistMatch[2];
-      var hours = persistMatch[3];
-      if (!(msg.guild.member(userId) && msg.guild.roles.get(roleId))) {
+      var hours = parseFloat(persistMatch[3]);
+      if (!(msg.guild.member(userId) && msg.guild.roles.get(roleId) && !_.isNaN(hours))) {
         msg.channel.send('Invalid userID or roleID!').catch((e) => {errorMessage(e);});
         return;
       }
@@ -239,7 +239,6 @@ const admCommands = {
     var tosend = '```\n';
     msg.guild.roles.keyArray().forEach((e) => {tosend = tosend + msg.guild.roles.get(e).name + ': ' + e + '\n';});
     tosend = tosend + '```';
-    console.log(tosend);
     msg.channel.send(tosend).then(() => {msg.delete();}).catch((e) => {errorMessage(e);});
   },
   'help': (msg) => {
