@@ -202,9 +202,9 @@ const admCommands = {
     }
     state[guildId].timedRoles[userId][roleId] = hours < 0 ? -1 : new Date().getTime() + hours * 3600000;
     saveState();
-    msg.guild.fetchMember(userId).then((member) => {
-      member.addRole(roleId).catch((e) => {errorMessage(e);});
-      msg.channel.send('Adding immediate role to user failed! I hope you know what you're doing...');
+    msg.guild.member(userId).addRole(roleId).catch((e) => {
+      msg.channel.send("Adding immediate role to user failed! I hope you know what you're doing...");
+      errorMessage(e);
     });
     msg.channel.send('Persistent Role Assignment successful!');
   },
