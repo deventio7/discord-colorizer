@@ -105,10 +105,12 @@ bot.on('ready', () => {
 bot.on('guildMemberAdd', (member) => {
   var userId = member.user.id;
   var guildId = member.guild.id;
-  if (state[guildId].hasOwnProperty('timedRoles') && state[guildId].timedRoles.hasOwnProperty(userId)) {
-    Object.keys(state[guildId].timedRoles[userId]).forEach((roleId) => {
-      member.addRole(roleId);
-    });
+  if (state[guildId].hasOwnProperty('timedRoles')) {
+    if (state[guildId].timedRoles.hasOwnProperty(userId)) {
+      Object.keys(state[guildId].timedRoles[userId]).forEach((roleId) => {
+        member.addRole(roleId);
+      });
+    }
   }
 });
 
