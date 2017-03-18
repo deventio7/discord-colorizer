@@ -105,7 +105,7 @@ bot.on('ready', () => {
 bot.on('guildMemberAdd', (member) => {
   var userId = member.user.id;
   var guildId = member.guild.id;
-  if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
+  if (!state[guildId]) { state[guildId] = new GuildState()}
   if (state[guildId].hasOwnProperty('timedRoles')) {
     if (state[guildId].timedRoles.hasOwnProperty(userId)) {
       Object.keys(state[guildId].timedRoles[userId]).forEach((roleId) => {
