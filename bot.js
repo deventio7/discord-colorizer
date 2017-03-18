@@ -105,6 +105,7 @@ bot.on('ready', () => {
 bot.on('guildMemberAdd', (member) => {
   var userId = member.user.id;
   var guildId = member.guild.id;
+  if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
   if (state[guildId].hasOwnProperty('timedRoles')) {
     if (state[guildId].timedRoles.hasOwnProperty(userId)) {
       Object.keys(state[guildId].timedRoles[userId]).forEach((roleId) => {
@@ -184,6 +185,7 @@ const admCommands = {
     };
   },
   'persistentrole': (msg) => {
+    if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
     var persistMatch = msg.content.match(/.*<(\d+)> *<(\d+)> *<([-.0123456789]+)> *((-f)?)/i);
     if (persistMatch) {
       var guildId = msg.guild.id;
@@ -211,6 +213,7 @@ const admCommands = {
     msg.channel.send('Persistent Role Assignment successful!');
   },
   'unpersistentrole': (msg) => {
+    if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
     var persistMatch = msg.content.match(/.*<(\d+)> *<(\d+)>/i);
     if (persistMatch) {
       var guildId = msg.guild.id;
