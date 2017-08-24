@@ -50,7 +50,7 @@ bot.on('ready', () => {
   bot.user.setPresence({ game: { name: '.help for, well, help!', type: 0 } });
   loadState();
   console.log('Bot is ready!');
-  /*
+  
   setInterval(() => {
     Object.keys(state).forEach((guildId) => {
       var guild = bot.guilds.get(guildId);      
@@ -78,7 +78,6 @@ bot.on('ready', () => {
 
     });
   }, 5000);
-  */
 });
 
 bot.on('guildMemberAdd', (member) => {
