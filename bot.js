@@ -46,36 +46,13 @@ loadState = function() {
   state = JSON.parse(fs.readFileSync('./state.sav'));
 }
     
-renamerFunction = function (params) {
-  var renameName = params.renameName;
-  var id = params.id;
-  var guildId = params.guildId;
-  var temp = new Promise((resolve, reject) => {
-    if (state[guildId].renaming[id].some((e) => {return e === renameName;})) {
-      bot.guilds.get(guildId).fetchMember(id).then((member) => {
-        member.setNickname(renameName).catch((e) => {errorMessage(e.response.error.text);});
-      });
-      setTimeout(resolve, Math.floor(Math.random()*10000)+10000, {"id": id, "guildId": guildId, "renameName":renameName});
-    } else {
-      reject();
-    }
-  }).then(renamerFunction).catch(() => {return;});
-  return;
-}
-
 bot.on('ready', () => {
-  bot.user.setGame('.help for, well, help!');
+  bot.user.setPresence({ game: { name: '.help for, well, help!', type: 0 } });
   loadState();
   console.log('Bot is ready!');
   setInterval(() => {
     Object.keys(state).forEach((guildId) => {
       var guild = bot.guilds.get(guildId);      
-
-      //rainbow
-      if (state[guildId].rainbow) {
-        guild.roles.get(state[guildId].rainbow).setColor(Math.floor(Math.random() * 16777216))
-          .catch((e) => {errorMessage(e);});
-      }
 
       //removing expired persistent roles
       var time = new Date().getTime();
@@ -126,63 +103,6 @@ const admCommands = {
       if (!voiceChannel || voiceChannel.type !== 'voice') {return msg.reply('I couldn\'t connect to your voice channel...');}
       voiceChannel.join().then((connection) => {resolve(connection);}).catch((err) => {reject(err);});
     });
-  },
-  'renamerepeat': (msg) => {
-    if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
-    var renameMatch = msg.content.match(/.*<([0123456789]+)>.*name:(.*)/i);
-    if (renameMatch) {
-      var renameName = renameMatch[2];
-      var renameId = renameMatch[1];
-    } else {
-      msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
-      return;
-    }
-    if (!state[msg.guild.id].renaming[renameId]) { state[msg.guild.id].renaming[renameId] = []; };
-    state[msg.guild.id].renaming[renameId].push(renameName);
-    saveState();
-    msg.channel.send('Abusing has commenced and will continue until morale improves!').catch((e) => {errorMessage(e);});
-    renamerFunction({"id":renameId, "guildId":msg.guild.id, "renameName":renameName});
-  },
-  'unrenamerepeat': (msg) => {
-    var renameMatch = msg.content.match(/.*<([0123456789]+)>/i);
-    if (renameMatch) {
-      var renameId = renameMatch[1];
-    } else {
-      msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
-      return;
-    }
-    msg.guild.fetchMember(renameId).then(() => {
-      if(state[msg.guild.id].renaming.hasOwnProperty(renameId)) {
-        delete state[msg.guild.id].renaming[renameId];
-        saveState();
-      }
-      msg.channel.send('Morale has improved, and the rename will stop!').catch((e) => {errorMessage(e);});
-    }).catch(() => {msg.channel.send('Not a valid user ID!');});
-  },
-  'rainbow': (msg) => {
-    if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState(); }
-    var rainbowMatch = msg.content.match(/.*<(\d+)>/i);
-    if (rainbowMatch) {
-      var roleId = rainbowMatch[1];
-    } else {
-      msg.channel.send('Incorrect syntax!').catch((e) => {errorMessage(e);});
-      return;
-    }
-    if(msg.guild.roles.get(roleId)) {
-      state[msg.guild.id].rainbow = roleId;
-      saveState();
-    } else {
-      msg.channel.send('Not a valid role ID!');
-    };
-  },
-  'unrainbow': (msg) => {
-    if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState(); }
-    if(state[msg.guild.id].hasOwnProperty('rainbow')) {
-      delete state[msg.guild.id].rainbow;
-      saveState();
-    } else {
-      msg.channel.send('No rainbow roles to begin with!');
-    };
   },
   'persistentrole': (msg) => {
     if (!state[msg.guild.id]) { state[msg.guild.id] = new GuildState()}
@@ -260,8 +180,6 @@ const admCommands = {
     '',
     '.!join : The bot will join the voice channel of the message\'s sender.',
     '.!leave : The bot will leave all voice channels on the server.',
-    '.!rainbow <roleId> : The bot will continuously change the color of this role. Only one rainbow role is allowed per server.',
-    '.!unrainbow : The bot will stop changing the color of all rainbow roles on the server.',
     '.!persistentRole <userId> <roleId> <hours> : The bot will assign the user that role, then remove it after the amount of hours given.',
     '.!unpersistentRole <userId> <roleId> : The bot will stop persisting the role on that user.',
     '.!roleList : The bot will print a list of all the roles on the server and their ids.',
@@ -474,7 +392,8 @@ bot.on('message', msg => {
   }
 });
 
-bot.login(token);
+console.log(token);
+bot.login(token).catch(console.error);
 
 http.createServer(function (request, response) {
    response.writeHead(200, {'Content-Type': 'text/plain'});

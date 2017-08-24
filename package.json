@@ -17,10 +17,11 @@
   "author": "deventio7",
   "license": "Apache-2.0",
   "dependencies": {
-    "discord.js": "^11.0.0",
+    "discord.js": "^11.1.0",
     "lodash": "^4.17.4",
-    "node-opus": "^0.2.4",
-    "request": "^2.79.0",
+    "node-opus": "^0.2.6",
+    "request": "^2.81.0",
+    "uws": "^0.14.5",
     "ytdl-core": "^0.8.1"
   },
   "scripts": {
